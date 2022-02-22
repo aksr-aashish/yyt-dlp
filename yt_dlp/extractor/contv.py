@@ -49,9 +49,14 @@ class CONtvIE(InfoExtractor):
                     episode_id = episode.get('id')
                     if not episode_id:
                         continue
-                    entries.append(self.url_result(
-                        'https://www.contv.com/details-movie/' + episode_id,
-                        CONtvIE.ie_key(), episode_id))
+                    entries.append(
+                        self.url_result(
+                            f'https://www.contv.com/details-movie/{episode_id}',
+                            CONtvIE.ie_key(),
+                            episode_id,
+                        )
+                    )
+
             return self.playlist_result(entries, video_id, details.get('title'))
 
         m_details = details['details']
@@ -59,14 +64,12 @@ class CONtvIE(InfoExtractor):
 
         formats = []
 
-        media_hls_url = m_details.get('media_hls_url')
-        if media_hls_url:
+        if media_hls_url := m_details.get('media_hls_url'):
             formats.extend(self._extract_m3u8_formats(
                 media_hls_url, video_id, 'mp4',
                 m3u8_id='hls', fatal=False))
 
-        media_mp4_url = m_details.get('media_mp4_url')
-        if media_mp4_url:
+        if media_mp4_url := m_details.get('media_mp4_url'):
             formats.append({
                 'format_id': 'http',
                 'url': media_mp4_url,
@@ -94,8 +97,7 @@ class CONtvIE(InfoExtractor):
 
         description = None
         for p in ('large_', 'medium_', 'small_', ''):
-            d = m_details.get(p + 'description')
-            if d:
+            if d := m_details.get(f'{p}description'):
                 description = d
                 break
 
