@@ -161,8 +161,7 @@ class FragmentFD(FileDownloader):
             ctx['live'] = False
         if not ctx['live']:
             total_frags_str = '%d' % ctx['total_frags']
-            ad_frags = ctx.get('ad_frags', 0)
-            if ad_frags:
+            if ad_frags := ctx.get('ad_frags', 0):
                 total_frags_str += ' (not including %d ad)' % ad_frags
         else:
             total_frags_str = 'unknown (live)'
@@ -307,8 +306,7 @@ class FragmentFD(FileDownloader):
         else:
             self.try_rename(ctx['tmpfilename'], ctx['filename'])
             if self.params.get('updatetime', True):
-                filetime = ctx.get('fragment_filetime')
-                if filetime:
+                if filetime := ctx.get('fragment_filetime'):
                     try:
                         os.utime(ctx['filename'], (time.time(), filetime))
                     except Exception:
@@ -331,8 +329,7 @@ class FragmentFD(FileDownloader):
             ctx['live'] = False
         if not ctx['live']:
             total_frags_str = '%d' % ctx['total_frags']
-            ad_frags = ctx.get('ad_frags', 0)
-            if ad_frags:
+            if ad_frags := ctx.get('ad_frags', 0):
                 total_frags_str += ' (not including %d ad)' % ad_frags
         else:
             total_frags_str = 'unknown (live)'
@@ -436,8 +433,7 @@ class FragmentFD(FileDownloader):
             if not interrupt_trigger[0]:
                 return False, frag_index
             headers = info_dict.get('http_headers', {}).copy()
-            byte_range = fragment.get('byte_range')
-            if byte_range:
+            if byte_range := fragment.get('byte_range'):
                 headers['Range'] = 'bytes=%d-%d' % (byte_range['start'], byte_range['end'] - 1)
 
             # Never skip the first fragment

@@ -123,11 +123,10 @@ class HttpFD(FileDownloader):
                 # set in response despite of requested Range (see
                 # https://github.com/ytdl-org/youtube-dl/issues/6057#issuecomment-126129799)
                 if has_range:
-                    content_range = ctx.data.headers.get('Content-Range')
-                    if content_range:
-                        content_range_m = re.search(r'bytes (\d+)-(\d+)?(?:/(\d+))?', content_range)
-                        # Content-Range is present and matches requested Range, resume is possible
-                        if content_range_m:
+                    if content_range := ctx.data.headers.get('Content-Range'):
+                        if content_range_m := re.search(
+                            r'bytes (\d+)-(\d+)?(?:/(\d+))?', content_range
+                        ):
                             if range_start == int(content_range_m.group(1)):
                                 content_range_end = int_or_none(content_range_m.group(2))
                                 content_len = int_or_none(content_range_m.group(3))

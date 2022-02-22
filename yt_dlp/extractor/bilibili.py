@@ -198,8 +198,8 @@ class BiliBiliIE(InfoExtractor):
                     'http://interface.bilibili.com/v2/playurl?%s&sign=%s' % (payload, sign),
                     video_id, note='Downloading video info page',
                     headers=headers, fatal=num == len(RENDITIONS))
-                if not video_info:
-                    continue
+            if not video_info:
+                continue
 
             if not durl and 'durl' not in video_info:
                 if num < len(RENDITIONS):
@@ -207,7 +207,7 @@ class BiliBiliIE(InfoExtractor):
                 self._report_error(video_info)
 
             formats = []
-            for idx, durl in enumerate(durl or video_info['durl']):
+            for durl in (durl or video_info['durl']):
                 formats.append({
                     'url': durl.get('baseUrl') or durl.get('base_url') or durl.get('url'),
                     'ext': mimetype2ext(durl.get('mimeType') or durl.get('mime_type')),
@@ -219,11 +219,16 @@ class BiliBiliIE(InfoExtractor):
                     'tbr': float_or_none(durl.get('bandwidth'), scale=1000),
                     'filesize': int_or_none(durl.get('size')),
                 })
-                for backup_url in traverse_obj(durl, 'backup_url', expected_type=list) or []:
-                    formats.append({
+                formats.extend(
+                    {
                         'url': backup_url,
                         'quality': -2 if 'hd.mp4' in backup_url else -3,
-                    })
+                    }
+                    for backup_url in traverse_obj(
+                        durl, 'backup_url', expected_type=list
+                    )
+                    or []
+                )
 
             for audio in audios:
                 formats.append({
@@ -237,12 +242,17 @@ class BiliBiliIE(InfoExtractor):
                     'tbr': float_or_none(audio.get('bandwidth'), scale=1000),
                     'filesize': int_or_none(audio.get('size'))
                 })
-                for backup_url in traverse_obj(audio, 'backup_url', expected_type=list) or []:
-                    formats.append({
+                formats.extend(
+                    {
                         'url': backup_url,
                         # backup URLs have lower priorities
                         'quality': -3,
-                    })
+                    }
+                    for backup_url in traverse_obj(
+                        audio, 'backup_url', expected_type=list
+                    )
+                    or []
+                )
 
             info.update({
                 'id': video_id,
@@ -288,10 +298,10 @@ class BiliBiliIE(InfoExtractor):
             'duration': float_or_none(video_info.get('timelength'), scale=1000),
         })
 
-        uploader_mobj = re.search(
+        if uploader_mobj := re.search(
             r'<a[^>]+href="(?:https?:)?//space\.bilibili\.com/(?P<id>\d+)"[^>]*>\s*(?P<name>[^<]+?)\s*<',
-            webpage)
-        if uploader_mobj:
+            webpage,
+        ):
             info.update({
                 'uploader': uploader_mobj.group('name').strip(),
                 'uploader_id': uploader_mobj.group('id'),
